@@ -1,0 +1,13 @@
+# Local virtual environment sandbox
+.venv/
+
+# Python runtime execution cache
+__pycache__/
+*.pyc
+
+# Production testing cache assets
+.pytest_cache/
+.coverage
+
+# Future local configuration files (where your secret keys will live)
+.env
