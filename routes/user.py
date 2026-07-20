@@ -4,10 +4,13 @@ import bcrypt
 import uuid
 from jose import jwt
 from db.config import db
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 user_router = APIRouter()
-SECRET_KEY = "supersecret"
-ALGORITHM = "HS256"
+SECRET_KEY = os.getenv("SECRET_KEY").encode("utf-8")
+ALGORITHM = os.getenv("ALGORITHM")
 
 class RegisterRequest(BaseModel):
     name:str
