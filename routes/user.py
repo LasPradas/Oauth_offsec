@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException, APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field, field_validator
 import bcrypt
 import uuid
 from jose import jwt
 from db.config import db
 import os
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 user_router = APIRouter()
@@ -13,14 +14,27 @@ SECRET_KEY = os.getenv("SECRET_KEY").encode("utf-8")
 ALGORITHM = os.getenv("ALGORITHM")
 
 class RegisterRequest(BaseModel):
-    name:str
-    email:str
-    password:str
+    name:str = Field(min_length=2, max_length=100)
+    email:EmailStr 
+    password:str = Field(min_length=8, max_length=100)
     user_type:str
 
 class LoginRequest(BaseModel):
     email:str
     password:str
+
+@field_validator("password")
+@classmethod
+def validate_password_complexity(cls, value: str) -> str:
+        if not re.search(r"[A-Z]", value):
+            raise ValueError("Password must contain at least one uppercase letter.")
+        if not re.search(r"[a-z]", value):
+            raise ValueError("Password must contain at least one lowercase letter.")
+        if not re.search(r"\d", value):
+            raise ValueError("Password must contain at least one number.")
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", value):
+            raise ValueError("Password must contain at least one special character.")
+        return value
 
 @user_router.post("/register")
 async def register_user(user:RegisterRequest):
@@ -32,11 +46,12 @@ async def register_user(user:RegisterRequest):
     user_id = str(uuid.uuid4())
     token = jwt.encode({"user_id" : user_id}, SECRET_KEY, algorithm=ALGORITHM)
 
+### Database Insertion
     users_collection.insert_one({
         "user_id":user_id,
         "email":user.email,
         "password":hashed_pw.decode(),
-        "token":token,
+        # "token":token,
         "name":user.name,
         "user_type":user.user_type
     })
