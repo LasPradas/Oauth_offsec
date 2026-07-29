@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, APIRouter
 from pydantic import BaseModel, EmailStr, Field, field_validator
 import bcrypt
 import uuid
-from jose import jwt
+import jwt
 from db.config import db
 import os
 from dotenv import load_dotenv
